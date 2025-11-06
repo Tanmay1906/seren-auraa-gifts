@@ -12,10 +12,10 @@ import pottery from "@/assets/product-pottery.jpg";
 
 const Index = () => {
   const featuredProducts = [
-    { id: "1", title: "Handcrafted Ceramic Bowl", price: 2499, image: ceramicBowl, artisan: "Priya Devi" },
-    { id: "2", title: "Embroidered Textile Scarf", price: 1899, image: textile, artisan: "Ravi Kumar" },
-    { id: "3", title: "Brass Candle Holder", price: 3299, image: brass, artisan: "Meera Singh" },
-    { id: "4", title: "Artisan Pottery Vase", price: 2799, image: pottery, artisan: "Anand Rao" },
+    { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, image: ceramicBowl, artisan: "Priya Devi" },
+    { id: "2", title: "Embroidered Textile Scarf", price: 599, image: textile, artisan: "Ravi Kumar" },
+    { id: "3", title: "Brass Candle Holder", price: 749, image: brass, artisan: "Meera Singh" },
+    { id: "4", title: "Artisan Pottery Vase", price: 699, image: pottery, artisan: "Anand Rao" },
   ];
 
   return (

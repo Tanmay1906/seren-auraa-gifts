@@ -15,7 +15,7 @@ const ProductDetail = () => {
   const product = {
     id: "1",
     title: "Handcrafted Ceramic Bowl",
-    price: 2499,
+    price: 799,
     image: ceramicBowl,
     artisan: "Priya Devi",
     location: "Jaipur, Rajasthan",
@@ -31,8 +31,8 @@ const ProductDetail = () => {
   };
 
   const relatedProducts = [
-    { id: "2", title: "Embroidered Textile Scarf", price: 1899, image: textile, artisan: "Ravi Kumar" },
-    { id: "3", title: "Brass Candle Holder", price: 3299, image: brass, artisan: "Meera Singh" },
+    { id: "2", title: "Embroidered Textile Scarf", price: 599, image: textile, artisan: "Ravi Kumar" },
+    { id: "3", title: "Brass Candle Holder", price: 749, image: brass, artisan: "Meera Singh" },
   ];
 
   return (

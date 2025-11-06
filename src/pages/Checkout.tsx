@@ -10,11 +10,11 @@ import ceramicBowl from "@/assets/product-ceramic-bowl.jpg";
 const Checkout = () => {
   // Mock cart data
   const cartItems = [
-    { id: "1", title: "Handcrafted Ceramic Bowl", price: 2499, quantity: 1, image: ceramicBowl },
+    { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, quantity: 1, image: ceramicBowl },
   ];
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 199;
+  const shipping = 49;
   const total = subtotal + shipping;
 
   return (

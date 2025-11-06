@@ -10,14 +10,14 @@ import pottery from "@/assets/product-pottery.jpg";
 
 const Shop = () => {
   const products = [
-    { id: "1", title: "Handcrafted Ceramic Bowl", price: 2499, image: ceramicBowl, artisan: "Priya Devi" },
-    { id: "2", title: "Embroidered Textile Scarf", price: 1899, image: textile, artisan: "Ravi Kumar" },
-    { id: "3", title: "Brass Candle Holder", price: 3299, image: brass, artisan: "Meera Singh" },
-    { id: "4", title: "Artisan Pottery Vase", price: 2799, image: pottery, artisan: "Anand Rao" },
-    { id: "5", title: "Decorative Ceramic Plate", price: 2199, image: ceramicBowl, artisan: "Lakshmi Bai" },
-    { id: "6", title: "Handwoven Table Runner", price: 1599, image: textile, artisan: "Ravi Kumar" },
-    { id: "7", title: "Brass Wall Hanging", price: 4299, image: brass, artisan: "Meera Singh" },
-    { id: "8", title: "Terracotta Planter Set", price: 1899, image: pottery, artisan: "Anand Rao" },
+    { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, image: ceramicBowl, artisan: "Priya Devi" },
+    { id: "2", title: "Embroidered Textile Scarf", price: 599, image: textile, artisan: "Ravi Kumar" },
+    { id: "3", title: "Brass Candle Holder", price: 749, image: brass, artisan: "Meera Singh" },
+    { id: "4", title: "Artisan Pottery Vase", price: 699, image: pottery, artisan: "Anand Rao" },
+    { id: "5", title: "Decorative Ceramic Plate", price: 649, image: ceramicBowl, artisan: "Lakshmi Bai" },
+    { id: "6", title: "Handwoven Table Runner", price: 549, image: textile, artisan: "Ravi Kumar" },
+    { id: "7", title: "Brass Wall Hanging", price: 799, image: brass, artisan: "Meera Singh" },
+    { id: "8", title: "Terracotta Planter Set", price: 499, image: pottery, artisan: "Anand Rao" },
   ];
 
   return (
