@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShoppingCart, Heart } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ProductCard from "@/components/ProductCard";
+import ProductCard from '@/components/ProductCard';
+import { addToCart } from "@/lib/cart";
 import ceramicBowl from "@/assets/product-ceramic-bowl.jpg";
 import textile from "@/assets/product-textile.jpg";
 import brass from "@/assets/product-brass.jpg";
@@ -87,7 +88,16 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex gap-4">
-                <Button size="lg" className="flex-1 bg-primary hover:bg-primary/90 shadow-elegant">
+                <Button
+                  size="lg"
+                  className="flex-1 bg-primary hover:bg-primary/90 shadow-elegant"
+                  onClick={() => {
+                    addToCart({ id: product.id, title: product.title, price: product.price, image: product.image });
+                    // use window.alert temporarily if no toast hook available here
+                    // but project has toast — use sonner/toast if desired. Keep simple.
+                    alert(`${product.title} added to cart`);
+                  }}
+                >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
                 </Button>
@@ -109,11 +119,18 @@ const ProductDetail = () => {
           {/* Related Products */}
           <div>
             <h2 className="text-3xl font-bold mb-8">You May Also Like</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} {...relatedProduct} />
-              ))}
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {relatedProducts.map((relatedProduct) => (
+                  <ProductCard
+                    key={relatedProduct.id}
+                    id={relatedProduct.id}
+                    title={relatedProduct.title}
+                    price={relatedProduct.price}
+                    image={relatedProduct.image}
+                    artisan={relatedProduct.artisan}
+                  />
+                ))}
+              </div>
           </div>
         </div>
       </div>

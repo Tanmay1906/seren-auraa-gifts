@@ -5,16 +5,36 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import ceramicBowl from "@/assets/product-ceramic-bowl.jpg";
+import { useEffect, useState } from "react";
+import { getCart, saveCart, CartItem } from "@/lib/cart";
 
 const Checkout = () => {
-  // Mock cart data
-  const cartItems = [
-    { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, quantity: 1, image: ceramicBowl },
-  ];
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    setCartItems(getCart());
+  }, []);
+
+  const updateQuantity = (id: string, qty: number) => {
+    const next = cartItems.map((it) => (it.id === id ? { ...it, quantity: Math.max(1, qty) } : it));
+    setCartItems(next);
+    saveCart(next);
+  };
+
+  const updateDetails = (id: string, details: string) => {
+    const next = cartItems.map((it) => (it.id === id ? { ...it, details } : it));
+    setCartItems(next);
+    saveCart(next);
+  };
+
+  const removeItem = (id: string) => {
+    const next = cartItems.filter((it) => it.id !== id);
+    setCartItems(next);
+    saveCart(next);
+  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 49;
+  const shipping = cartItems.length > 0 ? 49 : 0;
   const total = subtotal + shipping;
 
   return (
@@ -87,6 +107,47 @@ const Checkout = () => {
               </div>
 
               <Separator className="my-8" />
+              <Separator className="my-8" />
+
+              {/* Order Items (editable quantities & per-item details) */}
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Order Items</h2>
+                <div className="space-y-4">
+                  {cartItems.length === 0 && (
+                    <p className="text-muted-foreground">Your cart is empty.</p>
+                  )}
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="bg-card border border-border/50 rounded-lg p-4">
+                      <div className="flex items-start gap-4">
+                        <img src={item.image} alt={item.title} className="w-20 h-20 object-cover rounded-md" />
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">{item.title}</p>
+                              <p className="text-sm text-muted-foreground">₹{item.price.toLocaleString()}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Input type="number" min={1} value={item.quantity} onChange={(e) => updateQuantity(item.id, Number(e.target.value) || 1)} className="w-20" />
+                              <Button variant="ghost" onClick={() => removeItem(item.id)}>Remove</Button>
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            <Label>Item Details / Personalization</Label>
+                            <textarea
+                              value={item.details || ''}
+                              onChange={(e) => updateDetails(item.id, e.target.value)}
+                              className="w-full mt-2 p-2 rounded-md bg-background border border-border/50"
+                              placeholder="Enter gift note, personalization, or other instructions for this item"
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Payment */}
               <div>

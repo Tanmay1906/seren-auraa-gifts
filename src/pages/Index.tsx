@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, Sparkles, Heart } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import ProductCard from '@/components/ProductCard';
 import Footer from "@/components/Footer";
-import ProductCard from "@/components/ProductCard";
+import { useFeaturedProducts } from '@/hooks/useProducts';
 import heroImage from "@/assets/hero-artisan.jpg";
 import ceramicBowl from "@/assets/product-ceramic-bowl.jpg";
 import textile from "@/assets/product-textile.jpg";
@@ -11,12 +12,16 @@ import brass from "@/assets/product-brass.jpg";
 import pottery from "@/assets/product-pottery.jpg";
 
 const Index = () => {
-  const featuredProducts = [
-    { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, image: ceramicBowl, artisan: "Priya Devi" },
-    { id: "2", title: "Embroidered Textile Scarf", price: 599, image: textile, artisan: "Ravi Kumar" },
-    { id: "3", title: "Brass Candle Holder", price: 749, image: brass, artisan: "Meera Singh" },
-    { id: "4", title: "Artisan Pottery Vase", price: 699, image: pottery, artisan: "Anand Rao" },
-  ];
+  const { data: featured, isLoading } = useFeaturedProducts();
+
+  const featuredProducts = (featured && featured.length > 0)
+    ? featured.map((p: any) => ({ id: String(p.id), title: p.name || p.title, price: Number(p.price), image: p.image_url || p.imageUrl || p.image, artisan: p.artisan_name || p.artisanName || p.artisan }))
+    : [
+      { id: "1", title: "Handcrafted Ceramic Bowl", price: 799, image: ceramicBowl, artisan: "Priya Devi" },
+      { id: "2", title: "Embroidered Textile Scarf", price: 599, image: textile, artisan: "Ravi Kumar" },
+      { id: "3", title: "Brass Candle Holder", price: 749, image: brass, artisan: "Meera Singh" },
+      { id: "4", title: "Artisan Pottery Vase", price: 699, image: pottery, artisan: "Anand Rao" },
+    ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,7 +119,13 @@ const Index = () => {
                 className="animate-fade-up"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <ProductCard {...product} />
+                <ProductCard
+                  id={product.id}
+                  title={product.title}
+                  price={product.price}
+                  image={product.image}
+                  artisan={product.artisan}
+                />
               </div>
             ))}
           </div>
