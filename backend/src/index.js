@@ -18,8 +18,24 @@ const PORT = process.env.PORT || 3001;
 app.disable('etag');
 
 // Middleware
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN;
+const allowedOrigins = allowedOriginsEnv
+  ? allowedOriginsEnv.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : ['http://localhost:8080'];
+
 const corsOptions = {
-  origin: 'http://localhost:8080',
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`CORS blocked request from origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
