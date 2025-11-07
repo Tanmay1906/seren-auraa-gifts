@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { API_BASE_URL } from '@/lib/api/client';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -25,9 +26,7 @@ export function Register() {
     setLoading(true);
 
     try {
-      // Construct the API URL
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/(\/)+$/, '');
-      const response = await fetch(`${baseUrl}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
