@@ -6,23 +6,31 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
+import emailjs from "@emailjs/browser";
 import { getCart, saveCart, CartItem } from "@/lib/cart";
+import { toast } from "@/hooks/use-toast";
 
 const Checkout = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [customerEmail, setCustomerEmail] = useState("");
 
   useEffect(() => {
     setCartItems(getCart());
   }, []);
 
   const updateQuantity = (id: string, qty: number) => {
-    const next = cartItems.map((it) => (it.id === id ? { ...it, quantity: Math.max(1, qty) } : it));
+    const next = cartItems.map((it) =>
+      it.id === id ? { ...it, quantity: Math.max(1, qty) } : it
+    );
     setCartItems(next);
     saveCart(next);
   };
 
   const updateDetails = (id: string, details: string) => {
-    const next = cartItems.map((it) => (it.id === id ? { ...it, details } : it));
+    const next = cartItems.map((it) =>
+      it.id === id ? { ...it, details } : it
+    );
     setCartItems(next);
     saveCart(next);
   };
@@ -33,34 +41,155 @@ const Checkout = () => {
     saveCart(next);
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const shipping = cartItems.length > 0 ? 49 : 0;
   const total = subtotal + shipping;
+
+  // 🧾 EmailJS Order Confirmation
+  const placeOrder = async () => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Your cart is empty",
+        description: "Add items to your cart before placing an order.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const emailAddress = customerEmail.trim();
+
+    if (!emailAddress) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email so we can send the confirmation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(emailAddress)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+
+    if (!publicKey || !serviceId || !templateId) {
+      console.error("❌ Missing EmailJS environment variables.", {
+        publicKey,
+        serviceId,
+        templateId,
+      });
+      toast({
+        title: "Email service not configured",
+        description: "Please contact support to complete your order.",
+        variant: "destructive",
+      });
+      setIsPlacingOrder(false);
+      return;
+    }
+
+    const cartList = cartItems
+      .map(
+        (item) =>
+          `${item.title} (Qty: ${item.quantity}) - ₹${(
+            item.price * item.quantity
+          ).toLocaleString()}`
+      )
+      .join("\n");
+
+    // 🟢 Debug console logs — this will help us see exactly what’s sent
+    const payload = {
+      serviceId,
+      templateId,
+      publicKey,
+      params: {
+        email: emailAddress,
+        cart_items: cartList,
+        order_total: total.toLocaleString(),
+        year: new Date().getFullYear().toString(),
+      },
+    };
+    console.log("🟡 Sending EmailJS payload:", payload);
+
+    try {
+      // 🟢 Send email through EmailJS
+      const response = await emailjs.send(
+        serviceId,
+        templateId,
+        payload.params,
+        publicKey
+      );
+
+      console.log("✅ EmailJS response:", response);
+
+      setCartItems([]);
+      saveCart([]);
+
+      toast({
+        title: "Order placed!",
+        description: "A confirmation email has been sent to your inbox.",
+      });
+    } catch (error) {
+      console.error("❌ Failed to send confirmation email", error);
+      const msg =
+        (error as any)?.text ||
+        (error as Error)?.message ||
+        "Unexpected EmailJS error";
+      toast({
+        title: "Something went wrong",
+        description: `Couldn't send confirmation email (${msg}). Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
       <div className="pt-32 pb-24 px-6">
         <div className="container mx-auto max-w-6xl">
-          {/* Back Button */}
-          <Link to="/shop" className="inline-flex items-center text-muted-foreground hover:text-primary mb-8 transition-colors">
+          <Link
+            to="/shop"
+            className="inline-flex items-center text-muted-foreground hover:text-primary mb-8 transition-colors"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Continue Shopping
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Checkout Form */}
             <div className="lg:col-span-2 animate-fade-in">
               <h1 className="text-4xl font-bold mb-8">Checkout</h1>
 
-              {/* Contact Information */}
+              {/* Contact Info */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                  Contact Information
+                </h2>
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="you@example.com" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone</Label>
@@ -107,9 +236,8 @@ const Checkout = () => {
               </div>
 
               <Separator className="my-8" />
-              <Separator className="my-8" />
 
-              {/* Order Items (editable quantities & per-item details) */}
+              {/* Order Items */}
               <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-4">Order Items</h2>
                 <div className="space-y-4">
@@ -117,25 +245,47 @@ const Checkout = () => {
                     <p className="text-muted-foreground">Your cart is empty.</p>
                   )}
                   {cartItems.map((item) => (
-                    <div key={item.id} className="bg-card border border-border/50 rounded-lg p-4">
+                    <div
+                      key={item.id}
+                      className="bg-card border border-border/50 rounded-lg p-4"
+                    >
                       <div className="flex items-start gap-4">
-                        <img src={item.image} alt={item.title} className="w-20 h-20 object-cover rounded-md" />
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
                         <div className="flex-1">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="font-medium">{item.title}</p>
-                              <p className="text-sm text-muted-foreground">₹{item.price.toLocaleString()}</p>
+                              <p className="text-sm text-muted-foreground">
+                                ₹{item.price.toLocaleString()}
+                              </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Input type="number" min={1} value={item.quantity} onChange={(e) => updateQuantity(item.id, Number(e.target.value) || 1)} className="w-20" />
-                              <Button variant="ghost" onClick={() => removeItem(item.id)}>Remove</Button>
+                              <Input
+                                type="number"
+                                min={1}
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  updateQuantity(item.id, Number(e.target.value) || 1)
+                                }
+                                className="w-20"
+                              />
+                              <Button
+                                variant="ghost"
+                                onClick={() => removeItem(item.id)}
+                              >
+                                Remove
+                              </Button>
                             </div>
                           </div>
 
                           <div className="mt-3">
                             <Label>Item Details / Personalization</Label>
                             <textarea
-                              value={item.details || ''}
+                              value={item.details || ""}
                               onChange={(e) => updateDetails(item.id, e.target.value)}
                               className="w-full mt-2 p-2 rounded-md bg-background border border-border/50"
                               placeholder="Enter gift note, personalization, or other instructions for this item"
@@ -151,22 +301,13 @@ const Checkout = () => {
 
               {/* Payment */}
               <div>
-                <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="expiry">Expiry Date</Label>
-                      <Input id="expiry" placeholder="MM/YY" />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvv">CVV</Label>
-                      <Input id="cvv" placeholder="123" />
-                    </div>
-                  </div>
+                <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+                  <p className="font-medium">Cash on Delivery (COD)</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Pay when your order arrives. Our delivery partner will
+                    collect payment securely at your doorstep.
+                  </p>
                 </div>
               </div>
             </div>
@@ -179,15 +320,19 @@ const Checkout = () => {
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex gap-4">
-                      <img 
-                        src={item.image} 
+                      <img
+                        src={item.image}
                         alt={item.title}
                         className="w-20 h-20 object-cover rounded-lg"
                       />
                       <div className="flex-1">
                         <p className="font-medium text-sm">{item.title}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                        <p className="text-sm font-semibold text-primary">₹{item.price.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Qty: {item.quantity}
+                        </p>
+                        <p className="text-sm font-semibold text-primary">
+                          ₹{item.price.toLocaleString()}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -207,13 +352,20 @@ const Checkout = () => {
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-primary">₹{total.toLocaleString()}</span>
+                    <span className="text-primary">
+                      ₹{total.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
-                <Button className="w-full bg-primary hover:bg-primary/90 shadow-elegant" size="lg">
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90 shadow-elegant"
+                  size="lg"
+                  onClick={placeOrder}
+                  disabled={isPlacingOrder || cartItems.length === 0}
+                >
                   <CreditCard className="mr-2 h-5 w-5" />
-                  Place Order
+                  {isPlacingOrder ? "Placing Order..." : "Place Order"}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground mt-4">
@@ -223,7 +375,7 @@ const Checkout = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 };
